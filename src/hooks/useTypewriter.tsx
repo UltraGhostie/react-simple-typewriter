@@ -20,6 +20,8 @@ export type TypewriterProps = {
   deleteSpeed?: number
   /** Delay time between the words in Milliseconds */
   delaySpeed?: number
+  /** Delay time before start */
+  delayTime?: number
 }
 
 export type TypewriterHelper = {
@@ -39,6 +41,7 @@ export const useTypewriter = ({
   typeSpeed = 80,
   deleteSpeed = 50,
   delaySpeed = 1500,
+  delayTime = 100,
   onLoopDone,
   onType,
   onDelete,
@@ -56,38 +59,51 @@ export const useTypewriter = ({
   const isDelete = useRef(false)
   const isType = useRef(false)
   const isDelay = useRef(false)
+  const isFirst = useRef(true)
+  const isFirstDone = useRef(false)
 
   const handleTyping = useCallback(() => {
     const index = count % words.length
     const fullWord = words[index]
-
-    if (!isDelete.current) {
-      dispatch({ type: 'TYPE', payload: fullWord, speed: typeSpeed })
-      isType.current = true
-
-      if (text === fullWord) {
-        dispatch({ type: 'DELAY', payload: delaySpeed })
-        isType.current = false
-        isDelay.current = true
-
-        setTimeout(() => {
-          isDelay.current = false
-          isDelete.current = true
-        }, delaySpeed)
-
-        if (loop > 0) {
-          loops.current += 1
-          if (loops.current / words.length === loop) {
+    if (!isFirst.current) {
+      if (!isDelete.current) {
+        dispatch({ type: 'TYPE', payload: fullWord, speed: typeSpeed })
+        isType.current = true
+  
+        if (text === fullWord) {
+          dispatch({ type: 'DELAY', payload: delaySpeed })
+          isType.current = false
+          isDelay.current = true
+  
+          setTimeout(() => {
             isDelay.current = false
-            isDone.current = true
+            isDelete.current = true
+          }, delaySpeed)
+  
+          if (loop > 0) {
+            loops.current += 1
+            if (loops.current / words.length === loop) {
+              isDelay.current = false
+              isDone.current = true
+            }
           }
+        }
+      } else {
+        dispatch({ type: 'DELETE', payload: fullWord, speed: deleteSpeed })
+        if (text === '') {
+          isDelete.current = false
+          dispatch({ type: 'COUNT' })
         }
       }
     } else {
-      dispatch({ type: 'DELETE', payload: fullWord, speed: deleteSpeed })
-      if (text === '') {
-        isDelete.current = false
-        dispatch({ type: 'COUNT' })
+      if (!isFirstDone.current) {
+        dispatch({ type: 'DELAY', payload: delayTime })
+        isDelay.current = true
+        setTimeout(() => {
+          isDelay.current = false
+          isFirst.current = false
+        }, delayTime)
+        isFirstDone.current = true
       }
     }
 
@@ -108,6 +124,7 @@ export const useTypewriter = ({
     deleteSpeed,
     loop,
     typeSpeed,
+    delayTime,
     words,
     text,
     onType,
@@ -119,7 +136,6 @@ export const useTypewriter = ({
     const typing = setTimeout(handleTyping, speed)
 
     if (isDone.current) clearTimeout(typing)
-
     return () => clearTimeout(typing)
   }, [handleTyping, speed])
 
