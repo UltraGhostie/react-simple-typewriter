@@ -41,7 +41,7 @@ export const useTypewriter = ({
   typeSpeed = 80,
   deleteSpeed = 50,
   delaySpeed = 1500,
-  delayStart = 100,
+  delayStart = 0,
   onLoopDone,
   onType,
   onDelete,
