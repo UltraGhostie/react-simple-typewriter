@@ -20,8 +20,8 @@ export type TypewriterProps = {
   deleteSpeed?: number
   /** Delay time between the words in Milliseconds */
   delaySpeed?: number
-  /** Delay time before start */
-  delayTime?: number
+  /** Delay time before start in Milliseconds */
+  delayStart?: number
 }
 
 export type TypewriterHelper = {
@@ -41,7 +41,7 @@ export const useTypewriter = ({
   typeSpeed = 80,
   deleteSpeed = 50,
   delaySpeed = 1500,
-  delayTime = 100,
+  delayStart = 100,
   onLoopDone,
   onType,
   onDelete,
@@ -97,12 +97,12 @@ export const useTypewriter = ({
       }
     } else {
       if (!isFirstDone.current) {
-        dispatch({ type: 'DELAY', payload: delayTime })
+        dispatch({ type: 'DELAY', payload: delayStart })
         isDelay.current = true
         setTimeout(() => {
           isDelay.current = false
           isFirst.current = false
-        }, delayTime)
+        }, delayStart)
         isFirstDone.current = true
       }
     }
@@ -124,7 +124,7 @@ export const useTypewriter = ({
     deleteSpeed,
     loop,
     typeSpeed,
-    delayTime,
+    delayStart,
     words,
     text,
     onType,
